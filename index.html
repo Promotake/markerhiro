@@ -25,6 +25,16 @@
     /* Let AR.js determine the real video element dimensions and crop offsets.
        We must NOT overwrite its width/height or margins with object-fit: cover,
        otherwise video framing and AR projection stop matching. */
+    /* IMPORTANT: the video and WebGL stage receive ONE identical CSS zoom.
+       This crops away top/bottom gaps WITHOUT stretching the live picture
+       or changing the relative registration of robot and marker. */
+    #arjs-video, a-scene#arScene {
+      transform-origin: center center !important;
+      transform: var(--ar-fullscreen-transform, none) !important;
+      -webkit-transform-origin: center center !important;
+      -webkit-transform: var(--ar-fullscreen-transform, none) !important;
+    }
+
     #arjs-video {
       position: fixed !important;
       left: 0 !important;
@@ -64,16 +74,18 @@
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
   <script>
+    // AR.js calculates its own camera/marker sizes. Do not independently
+    // stretch the camera: zoom the video AND the tracked 3D stage together.
     (function () {
       'use strict';
       function startLayoutSync() {
         var scene = document.getElementById('arScene');
         if (!scene) return;
-        var last = '';
+        var lastStage = '';
+        var lastCover = '';
 
         function ensureTransparentRenderer() {
           if (!scene.renderer) return;
-          // Without this, an opaque WebGL clear can hide the real camera.
           scene.renderer.setClearColor(0x000000, 0);
           scene.renderer.setClearAlpha(0);
           if (scene.object3D) scene.object3D.background = null;
@@ -84,41 +96,58 @@
           var video = document.getElementById('arjs-video');
           if (!video || !video.videoWidth || !video.videoHeight) return;
 
-          // AR.js computes the camera's cover-crop in these exact CSS properties.
-          var width  = parseFloat(video.style.width);
+          // The original AR.js values are the same projection that worked
+          // with this custom .patt marker in the preceding version.
+          var width = parseFloat(video.style.width);
           var height = parseFloat(video.style.height);
-          var left   = parseFloat(video.style.marginLeft) || 0;
-          var top    = parseFloat(video.style.marginTop) || 0;
-          if (!Number.isFinite(width) || !Number.isFinite(height) || width < 1 || height < 1) return;
+          var left = parseFloat(video.style.marginLeft) || 0;
+          var top = parseFloat(video.style.marginTop) || 0;
+          if (![width, height, left, top].every(Number.isFinite) || width < 1 || height < 1) return;
 
-          var key = [width.toFixed(2), height.toFixed(2), left.toFixed(2), top.toFixed(2)].join(',');
-          if (key === last) return;
-          last = key;
+          // First align the underlying video and A-Frame stage 1:1.
+          var stageKey = [width, height, left, top].map(function (n) { return n.toFixed(2); }).join(',');
+          if (stageKey !== lastStage) {
+            lastStage = stageKey;
+            scene.style.setProperty('--track-width', width + 'px');
+            scene.style.setProperty('--track-height', height + 'px');
+            scene.style.setProperty('--track-left', left + 'px');
+            scene.style.setProperty('--track-top', top + 'px');
+            if (scene.is && scene.is('loaded') && typeof scene.resize === 'function') {
+              scene.resize();
+            } else if (scene.renderer) {
+              scene.renderer.setSize(Math.round(width), Math.round(height), false);
+            }
+          }
 
-          scene.style.setProperty('--track-width', width + 'px');
-          scene.style.setProperty('--track-height', height + 'px');
-          scene.style.setProperty('--track-left', left + 'px');
-          scene.style.setProperty('--track-top', top + 'px');
-
-          // A-Frame needs a viewport update as its stage dimension changes.
-          if (scene.is('loaded') && typeof scene.resize === 'function') {
-            scene.resize();
-          } else if (scene.renderer) {
-            scene.renderer.setSize(Math.round(width), Math.round(height), false);
+          // Then ZOOM THE TWO LAYERS IDENTICALLY for portrait full-screen:
+          // object-fit:contain gives the black bars seen on iPhone; using
+          // the same 'cover' transform for both maintains the AR alignment.
+          var vw = window.innerWidth;
+          var vh = window.innerHeight;
+          if (vw < 1 || vh < 1) return;
+          var zoom = Math.max(1, vw / width, vh / height);
+          var dx = vw / 2 - (left + width / 2);
+          var dy = vh / 2 - (top + height / 2);
+          var coverKey = [zoom, dx, dy, vw, vh].map(function (n) { return n.toFixed(3); }).join(',');
+          if (coverKey !== lastCover) {
+            lastCover = coverKey;
+            var transform = 'translate3d(' + dx.toFixed(2) + 'px, ' + dy.toFixed(2) + 'px, 0) scale(' + zoom.toFixed(5) + ')';
+            document.documentElement.style.setProperty('--ar-fullscreen-transform', transform);
           }
         }
 
-        // AR.js occasionally recalculates camera crop, especially after Safari
-        // toolbar changes or rotating the device. Keep the stage synchronized.
-        window.addEventListener('resize', function () {
-          requestAnimationFrame(function () { requestAnimationFrame(syncLayers); });
-        });
-        window.addEventListener('arjs-video-loaded', function () {
-          requestAnimationFrame(syncLayers);
+        // Recheck because AR.js changes video dimensions after camera init
+        // and Safari changes viewport height when the toolbar collapses.
+        window.addEventListener('resize', syncLayers);
+        window.addEventListener('orientationchange', syncLayers);
+        window.addEventListener('arjs-video-loaded', syncLayers);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', syncLayers);
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) requestAnimationFrame(syncLayers);
         });
         scene.addEventListener('renderstart', syncLayers);
-        scene.addEventListener('loaded', ensureTransparentRenderer);
-        window.setInterval(syncLayers, 180);
+        scene.addEventListener('loaded', syncLayers);
+        window.setInterval(syncLayers, 220);
         syncLayers();
       }
       if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', startLayoutSync);
