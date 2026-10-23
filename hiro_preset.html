@@ -168,8 +168,8 @@
       <a-asset-item id="robotModel" src="./assets/models/astrabot.glb"></a-asset-item>
     </a-assets>
 
-    <a-marker type="pattern" url="./marker/square_marker.patt"
-      smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
+    <a-marker id="squareMarker" type="pattern" url="./marker/square_marker.patt" emitevents="true"
+      smooth="true" smooth-count="12" smooth-tolerance="0.02" smooth-threshold="3">
       <!-- Place the model's geometric horizontal center over marker origin.
            Stop continuous rotation; it creates apparent off-center movement. -->
       <a-entity id="robot" gltf-model="#robotModel"
