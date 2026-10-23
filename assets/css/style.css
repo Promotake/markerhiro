@@ -91,3 +91,18 @@ code { color: #b3e9ef; font-family: ui-monospace, SFMono-Regular, Consolas, mono
   .preview-header { top: 16px; }
   .preview-header h1 { font-size: 29px; }
 }
+
+/* LR4 iPhone fix: keep most of the live camera picture uncovered. */
+@media (max-width: 700px) {
+  body.ar-compact .top-overlay { top: max(7px, env(safe-area-inset-top)); left: 8px; width: calc(100% - 16px); max-width: calc(100% - 16px); padding: 9px 12px 10px; border-radius: 13px; background: rgba(6,18,30,.88); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  body.ar-compact .brand-mark { min-width: 27px; height: 24px; font-size: 11px; border-radius: 7px; }
+  body.ar-compact .eyebrow { font-size: 9px; }
+  body.ar-compact .top-overlay h1 { margin: 7px 0 0; font-size: 19px; }
+  body.ar-compact .top-overlay .intro { display: none; }
+  body.ar-compact .top-overlay .status { margin-top: 8px; padding: 7px 9px; font-size: 11px; }
+  body.ar-compact .bottom-overlay { width: calc(100% - 16px); max-width: calc(100% - 16px); bottom: max(7px, env(safe-area-inset-bottom)); padding: 8px 10px; background: rgba(6,18,30,.90); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  body.ar-compact .bottom-overlay .steps, body.ar-compact .bottom-overlay .footnote { display: none; }
+  body.ar-compact .bottom-overlay .action-row { flex-wrap: nowrap; justify-content: center; gap: 5px; }
+  body.ar-compact .bottom-overlay .action { min-height: 34px; padding: 0 7px; font-size: 10px; white-space: nowrap; }
+  body.ar-compact .bottom-overlay .action.subtle { display: none; }
+}

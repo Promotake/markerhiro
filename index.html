@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#07141d">
   <meta name="description" content="Лабораторная работа №4: привязка 3D-модели glTF к маркеру HIRO с помощью AR.js и A-Frame.">
-  <title>ЛР №4 — Маркерная дополненная реальность</title>
-  <link rel="stylesheet" href="./assets/css/style.css">
+  <title>ЛР №4 — HIRO и 3D-робот</title>
+  <link rel="stylesheet" href="./assets/css/style.css?v=2">
   <!-- Stable, matching versions recommended in official AR.js documentation. -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.7/aframe/build/aframe-ar.js"></script>
-  <script src="./assets/js/app.js" defer></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+  <script src="./assets/js/app.js?v=2" defer></script>
 </head>
-<body class="ar-page">
+<body class="ar-page ar-compact">
   <header class="overlay top-overlay" aria-label="Заголовок AR-приложения">
     <div class="brandline">
       <span class="brand-mark">AR</span>
       <span class="eyebrow">ЛАБОРАТОРНАЯ РАБОТА № 4</span>
-      <span class="chip">A-Frame + AR.js</span>
+      <span class="chip">A-Frame + AR.js 3.4.8</span>
     </div>
-    <h1>Робот оживает на маркере</h1>
+    <h1>Робот на маркере HIRO</h1>
     <p class="intro">Разрешите доступ к камере и наведите телефон на маркер <strong>HIRO</strong>.</p>
     <div id="status" class="status loading" role="status" aria-live="polite">
       <span class="status-pulse" aria-hidden="true"></span>
@@ -27,22 +27,21 @@
     </div>
   </header>
 
-  <!-- AR.js uses a locally trained HIRO-style image marker; PNG and PATT match exactly. -->
+  <!-- Standard HIRO marker, camera texture OFF for better iOS compatibility. -->
   <a-scene
     id="arScene"
     embedded
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="antialias: true; alpha: true; colorManagement: true;"
-    arjs="sourceType: webcam; videoTexture: true; debugUIEnabled: false;">
+    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
 
     <a-assets timeout="30000">
       <a-asset-item id="astrobotAsset" src="./assets/models/astrabot.glb"></a-asset-item>
     </a-assets>
 
-    <a-marker id="hiroMarker" type="pattern" url="./marker/hiro_local.patt" emitevents="true"
+    <a-marker id="hiroMarker" preset="hiro" emitevents="true"
               smooth="true" smooth-count="5" smooth-tolerance="0.01" smooth-threshold="2">
-      <!-- Small glowing platform confirms the orientation of the marker plane. -->
+      <!-- Calibration piece: the cyan platform will show as soon as tracking works. -->
       <a-cylinder position="0 0.014 0" rotation="0 0 0" radius="0.38" height="0.028"
                   color="#17293d" material="metalness: 0.45; roughness: 0.4; opacity: 0.92"></a-cylinder>
       <a-torus position="0 0.030 0" rotation="-90 0 0" radius="0.37" radius-tubular="0.009"
@@ -62,12 +61,12 @@
   </a-scene>
 
   <footer class="overlay bottom-overlay">
-    <div class="steps"><span class="step-no">01</span>Откройте маркер на другом экране / распечатайте <span class="divider-dot">·</span>
+    <div class="steps"><span class="step-no">01</span>Откройте стандартный HIRO на другом экране / распечатайте <span class="divider-dot">·</span>
       <span class="step-no">02</span>Наведите на него камеру</div>
     <div class="action-row">
-      <a class="action primary" href="./marker/hiro.png" target="_blank" rel="noopener noreferrer" aria-label="Открыть маркер HIRO">▦ <span>Маркер HIRO</span></a>
+      <a class="action primary" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank" rel="noopener noreferrer" aria-label="Открыть маркер HIRO">▦ <span>Маркер HIRO</span></a>
       <a class="action" href="./preview.html" aria-label="Посмотреть модель без камеры">◈ <span>3D-модель</span></a>
-      <a class="action" href="./hiro_preset.html" title="Версия с готовым маркером HIRO">HIRO preset</a>
+      <a class="action" href="./debug.html" title="Упрощённая диагностика отслеживания">Тест маркера</a>
       <button id="toggleSpin" class="action subtle" type="button" aria-label="Остановить или запустить вращение модели">⏸ <span>Вращение</span></button>
     </div>
     <p class="footnote">Модель загружается из <code>assets/models/astrabot.glb</code> — не из интернета.</p>

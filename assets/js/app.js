@@ -1,81 +1,58 @@
-/* Lab 4: AR marker state, camera requirements and a simple model control. */
-(function () {
+/* LR4: AR.js marker events and camera/asset status. */
+(() => {
   'use strict';
   function init() {
-    const statusEl = document.querySelector('#status');
-    const statusText = document.querySelector('#statusText');
-    const marker = document.querySelector('#hiroMarker');
-    const robot = document.querySelector('#robot');
-    const asset = document.querySelector('#astrobotAsset');
-    const scene = document.querySelector('#arScene');
-    const spinButton = document.querySelector('#toggleSpin');
-    let markerVisible = false;
-    let modelLoaded = false;
-    let spinEnabled = true;
+    const marker = document.getElementById('hiroMarker');
+    const robot = document.getElementById('robot');
+    const scene = document.getElementById('arScene');
+    const asset = document.getElementById('astrobotAsset');
+    const statusRoot = document.getElementById('status');
+    const statusText = document.getElementById('statusText');
+    const spinButton = document.getElementById('toggleSpin');
+    if (!marker || !robot || !scene || !statusRoot || !statusText) return;
 
-    function status(kind, text) {
-      statusEl.className = 'status ' + kind;
-      statusText.textContent = text;
+    let found = false;
+    let loaded = false;
+    let cameraReady = false;
+    let spin = true;
+    let problem = '';
+    function status(kind, message) {
+      statusRoot.className = 'status ' + kind;
+      statusText.textContent = message;
     }
-    function updateStatus() {
-      if (!window.isSecureContext) {
-        status('error', 'Камера телефона работает только через HTTPS (или localhost на ПК).');
-      } else if (markerVisible && modelLoaded) {
-        status('found', 'Маркер найден — 3D-модель привязана к нему!');
-      } else if (markerVisible) {
-        status('loading', 'Маркер найден. Загружается 3D-модель…');
-      } else if (modelLoaded) {
-        status('waiting', 'Модель готова. Покажите камере маркер HIRO.');
-      } else {
-        status('loading', 'Камера запускается, 3D-модель загружается…');
-      }
+    function refresh() {
+      if (problem) return status('error', problem);
+      if (!window.isSecureContext) return status('error', 'Для камеры нужен HTTPS или localhost.');
+      if (found) return status('found', loaded ? 'Маркер найден! Робот привязан к HIRO.' : 'Маркер найден. Загружается робот…');
+      if (cameraReady) return status('waiting', loaded ? 'Камера запущена. Ищем HIRO…' : 'Камера запущена. Загружается робот…');
+      return status('loading', loaded ? 'Робот готов. Запуск AR-трекера…' : 'Запускаем камеру и робот…');
     }
-
-    marker.addEventListener('markerFound', function () {
-      markerVisible = true;
-      updateStatus();
-    });
-    marker.addEventListener('markerLost', function () {
-      markerVisible = false;
-      updateStatus();
-    });
-    robot.addEventListener('model-loaded', function () {
-      modelLoaded = true;
-      updateStatus();
-    });
-    robot.addEventListener('model-error', function (error) {
-      console.error('Cannot load astrobot.glb', error);
-      status('error', 'Не удалось загрузить astrobot.glb — проверьте сервер и путь к файлу.');
-    });
-    asset.addEventListener('error', function (error) {
-      console.error('Asset loading error:', error);
-      status('error', 'Файл модели не загружен. Не открывайте index.html через file://.');
-    });
-    scene.addEventListener('loaded', updateStatus);
-
-    if (location.protocol === 'file:') {
-      status('error', 'Нужен веб-сервер! На ПК запустите run_local.bat; на телефоне — HTTPS.');
-    } else {
-      updateStatus();
+    function onFound() { found = true; refresh(); }
+    function onLost() { found = false; refresh(); }
+    marker.addEventListener('markerFound', onFound);
+    marker.addEventListener('markerLost', onLost);
+    // Some AR.js versions dispatch markerFound on the scene rather than the marker.
+    scene.addEventListener('markerFound', ev => { if (ev.target === marker) onFound(); });
+    scene.addEventListener('markerLost', ev => { if (ev.target === marker) onLost(); });
+    robot.addEventListener('model-loaded', () => { loaded = true; refresh(); });
+    robot.addEventListener('model-error', () => { problem = 'Ошибка загрузки 3D-модели. Проверь assets/models/astrabot.glb'; refresh(); });
+    asset?.addEventListener('error', () => { problem = 'Не загрузился astrobot.glb'; refresh(); });
+    // AR.js raises camera-init and arjs-video-loaded on window/document depending on build.
+    function onCamera() { cameraReady = true; refresh(); }
+    for (const target of [window, document, scene]) {
+      target.addEventListener('camera-init', onCamera);
+      target.addEventListener('arjs-video-loaded', onCamera);
+      target.addEventListener('camera-error', e => { problem = 'Нет доступа к камере: ' + (e.detail?.message || e.message || 'проверь настройки'); refresh(); });
     }
-
-    spinButton.addEventListener('click', function () {
+    scene.addEventListener('loaded', refresh);
+    spinButton?.addEventListener('click', () => {
+      spin = !spin;
       const anim = robot.components['animation__spin'];
-      spinEnabled = !spinEnabled;
-      if (anim) {
-        if (spinEnabled) anim.resumeAnimation(); else anim.pauseAnimation();
-      }
-      spinButton.innerHTML = spinEnabled ? '⏸ <span>Вращение</span>' : '▶ <span>Вращение</span>';
-      spinButton.setAttribute('aria-pressed', String(!spinEnabled));
+      if (anim) { if (spin) anim.resumeAnimation(); else anim.pauseAnimation(); }
+      spinButton.innerHTML = spin ? '⏸ <span>Вращение</span>' : '▶ <span>Вращение</span>';
     });
-
-    window.addEventListener('unhandledrejection', function (event) {
-      console.warn('AR initialization warning:', event.reason);
-    });
+    refresh();
   }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();

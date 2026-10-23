@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ЛР4 — Тест распознавания HIRO</title>
+<script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+<script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+<style>
+ html,body{padding:0;margin:0;overflow:hidden;width:100%;height:100%;background:#050a12;font-family:system-ui,sans-serif;color:white}
+ #hud{position:fixed;z-index:100;top:max(10px,env(safe-area-inset-top));left:10px;right:10px;padding:12px 15px;background:rgba(0,0,0,.84);border-radius:12px;pointer-events:none}
+ #hud b{font-size:16px} #status{display:block;padding-top:5px;font-size:13px;line-height:1.5;color:#a6dcfc}
+ #foot{position:fixed;z-index:100;bottom:max(12px,env(safe-area-inset-bottom));left:10px;right:10px;text-align:center}
+ #foot a{color:#091826;background:#92f4f0;display:inline-block;border-radius:12px;padding:11px 14px;font-size:13px;font-weight:bold;text-decoration:none}
+ #foot a+ a{margin-left:6px;background:#fff}
+</style>
+</head>
+<body>
+<div id="hud"><b>Проверка HIRO — без 3D-модели</b><span id="status">Пробуем запустить камеру и AR.js…</span></div>
+<div id="foot"><a href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank" rel="noopener">Маркер для ПК</a><a href="./index.html">Назад к роботу</a></div>
+<a-scene id="scene" embedded vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;">
+  <a-marker id="marker" preset="hiro" emitevents="true">
+    <a-box position="0 0.5 0" depth="0.6" height="1" width="0.6" material="color: #ffcc00"></a-box>
+    <a-sphere position="0 1.18 0" radius="0.18" color="#00ffee"></a-sphere>
+  </a-marker>
+  <a-entity camera></a-entity>
+</a-scene>
+<script>
+(() => {
+ const $ = id => document.getElementById(id);
+ const status=$('status'), marker=$('marker');
+ let scans=0, camera=false, gotError='';
+ function setStatus(msg,color) {status.textContent=msg;status.style.color=color||'#a6dcfc';}
+ marker.addEventListener('markerFound', () => {scans++;setStatus('МАРКЕР НАЙДЕН ('+scans+') — должен появиться жёлтый куб!', '#79ffb6');});
+ marker.addEventListener('markerLost', () => setStatus('Маркер потерян, покажи HIRO снова. Всего распознаваний: '+scans));
+ for (const target of [window,document,$('scene')]){
+  target.addEventListener('camera-init', () => {camera=true;if(!scans)setStatus('Камера запущена. Держи маркер HIRO целиком в кадре.');});
+  target.addEventListener('arjs-video-loaded',()=>{camera=true;if(!scans)setStatus('Видео с камеры запущено. Ищем маркер HIRO…');});
+  target.addEventListener('camera-error',e=>{gotError='Ошибка камеры';setStatus('Ошибка камеры: разреши доступ через HTTPS.','#ff9696');});
+ }
+ setTimeout(()=>{if(!camera&&!scans&&!gotError)setStatus('Если камера видна, но статус не изменился, попробуй навести телефон на маркер.');},6500);
+ window.addEventListener('error',ev=>{if(!scans)setStatus('Ошибка JS: '+String(ev.message||'неизвестная'),'#ff9696');});
+})();
+</script>
+</body>
+</html>
