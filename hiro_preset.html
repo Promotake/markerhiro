@@ -1,13 +1,15 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#000000">
-  <title>ЛР4 — 3D-модель на маркере</title>
+  <title>LR4 - AR robot on square marker</title>
   <style>
-    html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#000}
-    a-scene{display:block;position:fixed;inset:0;width:100%;height:100%}
+    /* Keep every HTML layer transparent. The camera image is rendered by AR.js. */
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: transparent !important; }
+    a-scene { display: block; width: 100%; height: 100%; background: transparent !important; }
+    .a-canvas, a-scene canvas { background: transparent !important; }
   </style>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
@@ -16,21 +18,27 @@
   <a-scene
     embedded
     vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
     device-orientation-permission-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
-    arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false; patternRatio: 0.5;">
+    renderer="antialias: true; alpha: true; precision: medium"
+    arjs="sourceType: webcam; videoTexture: true; trackingMethod: best; debugUIEnabled: false; patternRatio: 0.5;">
+
     <a-assets timeout="30000">
       <a-asset-item id="robotModel" src="./assets/models/astrabot.glb"></a-asset-item>
     </a-assets>
+
     <a-marker type="pattern" url="./marker/square_marker.patt"
-      smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
-      <a-entity gltf-model="#robotModel" position="0 0.03 0"
-        rotation="0 0 0" scale="0.55 0.55 0.55"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear">
+              smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
+      <a-entity gltf-model="#robotModel"
+                position="0 0.03 0"
+                rotation="0 0 0"
+                scale="0.55 0.55 0.55"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear">
       </a-entity>
       <a-light type="ambient" intensity="1.35"></a-light>
       <a-light type="directional" intensity="1.25" position="1 2 1"></a-light>
     </a-marker>
+
     <a-entity camera></a-entity>
   </a-scene>
 </body>

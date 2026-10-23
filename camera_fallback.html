@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <title>LR4 - alternate camera mode</title>
+  <style>
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent !important; }
+    /* Alternate mode: use the physical webcam <video> below a transparent WebGL canvas. */
+    #arjs-video, video#arjs-video {
+      display: block !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      object-fit: cover !important;
+      max-width: none !important;
+      max-height: none !important;
+      z-index: 0 !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    a-scene { display: block; width: 100vw; height: 100vh; height: 100dvh; position: fixed !important; inset: 0; z-index: 1 !important; background: transparent !important; }
+    .a-canvas, a-scene canvas { background: transparent !important; }
+  </style>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
+  <script>
+    // Alternative iOS camera mode. Do not create a second stream;
+    // use the video element that AR.js already uses for marker tracking.
+    document.addEventListener('DOMContentLoaded', function () {
+      var scene = document.querySelector('a-scene');
+      function exposeCamera() {
+        var video = document.getElementById('arjs-video');
+        if (!video) return;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.muted = true;
+        video.style.setProperty('z-index', '0', 'important');
+        video.style.setProperty('display', 'block', 'important');
+      }
+      document.addEventListener('arjs-video-loaded', exposeCamera);
+      window.addEventListener('arjs-video-loaded', exposeCamera);
+      scene.addEventListener('renderstart', function () {
+        if (scene.renderer) {
+          scene.renderer.setClearColor(0x000000, 0);
+          scene.renderer.setClearAlpha(0);
+        }
+        if (scene.object3D) scene.object3D.background = null;
+        exposeCamera();
+      });
+    });
+  </script>
+</head>
+<body>
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    loading-screen="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+    renderer="antialias: true; alpha: true; precision: medium"
+    arjs="sourceType: webcam; videoTexture: false; trackingMethod: best; debugUIEnabled: false; patternRatio: 0.5;">
+    <a-assets timeout="30000">
+      <a-asset-item id="robotModel" src="./assets/models/astrabot.glb"></a-asset-item>
+    </a-assets>
+    <a-marker type="pattern" url="./marker/square_marker.patt"
+              smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
+      <a-entity gltf-model="#robotModel" position="0 0.03 0" rotation="0 0 0"
+                scale="0.55 0.55 0.55"
+                animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear"></a-entity>
+      <a-light type="ambient" intensity="1.35"></a-light>
+      <a-light type="directional" intensity="1.25" position="1 2 1"></a-light>
+    </a-marker>
+    <a-entity camera></a-entity>
+  </a-scene>
+</body>
+</html>
