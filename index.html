@@ -1,59 +1,19 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#050c14">
-  <title>ЛР4 — Робот на маркере HIRO</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#000000" />
+  <title>ЛР4 - AR.js HIRO</title>
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: #050c14; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
     a-scene { position: fixed; inset: 0; width: 100%; height: 100%; }
-    .hud {
-      position: fixed; z-index: 20; left: 12px; right: 12px; top: max(12px, env(safe-area-inset-top));
-      background: rgba(5, 12, 20, 0.82); color: #eef7fb; border: 1px solid rgba(158, 220, 234, 0.20);
-      border-radius: 14px; padding: 12px 14px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    }
-    .hud h1 { margin: 0 0 6px; font-size: 28px; line-height: 1.05; }
-    .hud p { margin: 0; font-size: 14px; line-height: 1.35; color: #b5ccd6; }
-    .status {
-      margin-top: 10px; font-size: 14px; padding: 10px 12px; border-radius: 10px; background: rgba(137, 196, 244, 0.14);
-      display: flex; align-items: center; gap: 10px;
-    }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #8ecaf3; box-shadow: 0 0 0 4px rgba(142,202,243,0.12); flex: 0 0 10px; }
-    .status.found { background: rgba(67, 215, 166, 0.16); }
-    .status.found .dot { background: #49e4b0; box-shadow: 0 0 0 4px rgba(73,228,176,0.12); }
-    .status.error { background: rgba(238, 100, 100, 0.18); }
-    .status.error .dot { background: #ff8b8b; box-shadow: 0 0 0 4px rgba(255,139,139,0.12); }
-    .bottom {
-      position: fixed; z-index: 20; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom));
-      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
-    }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 14px;
-      border-radius: 10px; text-decoration: none; background: rgba(5, 12, 20, 0.82); color: #eef7fb;
-      border: 1px solid rgba(158, 220, 234, 0.20); font-weight: 700; font-size: 14px;
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    }
-    .btn.primary { background: linear-gradient(135deg, #adfbff, #57d8ea); color: #03232d; border: none; }
-    @media (max-width: 520px) {
-      .hud h1 { font-size: 18px; }
-      .hud p, .status { font-size: 12px; }
-      .btn { min-height: 38px; font-size: 12px; padding: 0 10px; }
-    }
   </style>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/3.4.8/aframe/build/aframe-ar.js"></script>
-  <script defer src="./assets/js/simple-ar.js?v=1"></script>
 </head>
 <body>
-  <div class="hud">
-    <h1>Робот на маркере HIRO</h1>
-    <p>Наведите камеру телефона на маркер HIRO. Модель расположена прямо на маркере.</p>
-    <div id="status" class="status"><span class="dot"></span><span id="statusText">Запускаем камеру и модель…</span></div>
-  </div>
-
   <a-scene
-    id="arScene"
     embedded
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; antialias: true; alpha: true"
@@ -61,16 +21,16 @@
     arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;">
 
     <a-assets timeout="30000">
-      <a-asset-item id="astrobotAsset" src="./assets/models/astrabot.glb"></a-asset-item>
+      <a-asset-item id="robotModel" src="./assets/models/astrabot.glb"></a-asset-item>
     </a-assets>
 
-    <a-marker id="hiroMarker" preset="hiro" emitevents="true" smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
-      <a-entity id="robot"
-                gltf-model="#astrobotAsset"
-                position="0 0.03 0"
-                rotation="0 0 0"
-                scale="0.55 0.55 0.55"
-                animation__spin="property: rotation; from: 0 0 0; to: 0 360 0; dur: 9000; easing: linear; loop: true">
+    <a-marker preset="hiro" emitevents="true" smooth="true" smooth-count="8" smooth-tolerance="0.01" smooth-threshold="2">
+      <a-entity
+        gltf-model="#robotModel"
+        position="0 0.03 0"
+        rotation="0 0 0"
+        scale="0.55 0.55 0.55"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear">
       </a-entity>
       <a-light type="ambient" intensity="1.35"></a-light>
       <a-light type="directional" intensity="1.25" position="1 2 1"></a-light>
@@ -78,10 +38,5 @@
 
     <a-entity camera></a-entity>
   </a-scene>
-
-  <div class="bottom">
-    <a class="btn primary" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank" rel="noopener">Маркер HIRO</a>
-    <a class="btn" href="./preview.html">3D-модель</a>
-  </div>
 </body>
 </html>

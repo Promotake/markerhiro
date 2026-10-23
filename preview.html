@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Просмотр модели</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Preview model</title>
   <style>
-    html, body { margin: 0; height: 100%; background: radial-gradient(circle at top, #17344b, #07131d 60%, #040a0f); overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-    .back { position: fixed; z-index: 10; top: 12px; left: 12px; background: rgba(4,10,15,.8); color: #eef7fb; padding: 10px 14px; border-radius: 10px; text-decoration: none; border: 1px solid rgba(158,220,234,.2); }
+    html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: #08131d; }
     model-viewer { width: 100%; height: 100%; }
   </style>
   <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
 </head>
 <body>
-  <a class="back" href="./index.html">← Назад в AR</a>
   <model-viewer src="./assets/models/astrabot.glb" camera-controls auto-rotate shadow-intensity="1" environment-image="neutral"></model-viewer>
 </body>
 </html>
