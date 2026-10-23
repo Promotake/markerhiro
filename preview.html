@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07141d">
+  <title>Просмотр модели astrobot.glb — ЛР4</title>
+  <link rel="stylesheet" href="./assets/css/style.css">
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="./assets/js/preview.js" defer></script>
+</head>
+<body class="preview-page">
+  <div class="preview-header overlay">
+    <div class="brandline"><span class="brand-mark">3D</span><span class="eyebrow">ЛАБОРАТОРНАЯ № 4 / ПРОСМОТР МОДЕЛИ</span></div>
+    <h1>ASTROBOT <span class="header-muted">/ glTF 2.0</span></h1>
+    <p>Это отдельный просмотр локального файла модели без камеры и маркера.</p>
+  </div>
+
+  <a-scene id="previewScene" embedded background="color: #07141e" vr-mode-ui="enabled: false"
+           device-orientation-permission-ui="enabled: false" renderer="antialias: true; colorManagement: true;">
+    <a-assets timeout="30000"><a-asset-item id="previewAsset" src="./assets/models/astrabot.glb"></a-asset-item></a-assets>
+    <a-entity position="0 -0.35 0">
+      <a-cylinder color="#173047" metalness="0.4" height="0.16" radius="0.70" position="0 0 0"></a-cylinder>
+      <a-torus position="0 0.09 0" rotation="-90 0 0" radius="0.66" radius-tubular="0.025"
+               material="color: #67dce9; emissive: #277985; emissiveIntensity: 0.4"></a-torus>
+    </a-entity>
+    <a-entity id="previewRobot" gltf-model="#previewAsset" scale="1.12 1.12 1.12" position="0 -0.26 0"
+              animation__rotate="property: rotation; from: 0 -15 0; to: 0 345 0; dur: 13000; easing: linear; loop: true"></a-entity>
+    <a-entity light="type: ambient; color: #ffffff; intensity: 1.4"></a-entity>
+    <a-entity light="type: directional; color: #a6ecff; intensity: 2.1" position="-2 4 3"></a-entity>
+    <a-entity light="type: directional; color: #ffcf8d; intensity: 0.75" position="3 2 -3"></a-entity>
+    <a-camera position="0 0.46 3.1" look-controls="enabled: false" wasd-controls="enabled: false"></a-camera>
+  </a-scene>
+
+  <div class="preview-actions overlay">
+    <span id="previewStatus" class="model-status">Загрузка модели…</span>
+    <div class="action-row">
+      <a class="action primary" href="./index.html">← <span>В AR-режим</span></a>
+      <button id="zoomOut" class="action square" type="button" aria-label="Уменьшить">−</button>
+      <button id="zoomIn" class="action square" type="button" aria-label="Увеличить">+</button>
+      <button id="pausePreview" class="action square" type="button" aria-label="Остановить вращение">⏸</button>
+    </div>
+    <p class="footnote">Источник: <code>assets/models/astrabot.glb</code> <span class="divider-dot">·</span> рядом доступна версия <code>astrabot.gltf</code>.</p>
+  </div>
+</body>
+</html>
